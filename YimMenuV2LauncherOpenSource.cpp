@@ -20,6 +20,7 @@
 #include <ctime>
 #include <iomanip>
 #include "json.hpp"
+#include <cstdlib>
 using json = nlohmann::json;
 const std::string asciiArt = "\033[35m\n"
 "Y88b   d88P 8888888 888b     d888 888b     d888 8888888888 888b    888 888     888     888     888  .d8888b.      \n"
@@ -319,8 +320,13 @@ void refresh_interface(const std::string& coloredStatus, const std::string& stag
     draw_interface(coloredStatus, stage);
 }
 
+// Gọi trước main
+void cleanup_temp_folder() {
+    delete_launcher_cache();
+}
 
 int main() {
+    atexit(cleanup_temp_folder); // Đăng ký hàm dọn dẹp
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
 #else
