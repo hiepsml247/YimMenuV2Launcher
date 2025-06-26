@@ -1,4 +1,4 @@
-name: Build YimMenuV2Launcher
+name: Build CMake Project
 
 on:
   push:
@@ -19,10 +19,15 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
           .\vcpkg\vcpkg install
 
-      - name: Set VCPKG_ROOT environment variable
-        run: echo "VCPKG_ROOT=$(pwd)/vcpkg" >> $GITHUB_ENV
+      - name: Configure CMake
+        run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
 
-      - uses: microsoft/setup-msbuild@v2
+      - name: Build
+        run: cmake --build build --config Release
 
-      - name: Build solution
-        run: msbuild YimMenuV2LauncherOpenSource.sln /p:Configuration=Release
+      - name: Upload EXE Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YimMenuV2LauncherExe
+          path: |
+            build/Release/*.exe
