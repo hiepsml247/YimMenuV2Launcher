@@ -10,4 +10,6 @@ add_executable(YimMenuV2Launcher
     json.hpp
     appicon.rc
 )
+set_target_properties(YimMenuV2Launcher PROPERTIES OUTPUT_NAME "ChichSmlLauncher")
+
 target_link_libraries(YimMenuV2Launcher PRIVATE CURL::libcurl)
