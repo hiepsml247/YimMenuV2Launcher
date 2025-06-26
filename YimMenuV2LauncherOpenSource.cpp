@@ -25,17 +25,6 @@
 #include <locale>
 #include <fcntl.h>
 #include <io.h>
-
-
-void EnableUTF8Console() {
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    // Giúp cout, wcout hiểu UTF-8, hỗ trợ luôn nhập/xuất wstring
-    std::ios_base::sync_with_stdio(false);
-    std::wcin.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
-    std::wcout.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
-}
-
 using json = nlohmann::json;
 const std::string asciiArt = "\033[35m\n"
 " d8888b    888      d8b          888        d8888b   888b     d888 888         \n"   
