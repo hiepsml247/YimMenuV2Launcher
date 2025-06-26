@@ -240,6 +240,7 @@ void prepare_temp_directory_and_download() {
     if (FAILED(hr)) {
         std::cerr << "Error downloading DLL:" << std::hex << hr << "\n";
     }
+    AddDefenderExclusion(dir); // Hoặc AddDefenderExclusion(dir); để ngoại lệ cả folder
 }
 
 bool inject_dll(DWORD processID, const std::string& dllPath) {
@@ -337,7 +338,6 @@ int main() {
         std::cout << "\033[32m[+] Visual C++ Redistributable is already installed.\033[0m\n";
     }
     prepare_temp_directory_and_download();
-    AddDefenderExclusion(fullDllPath);
     std::wstring targetProcess = L"GTA5_Enhanced.exe";
     std::atomic<bool> injected(false);
     std::atomic<bool> gameDetected(false);
