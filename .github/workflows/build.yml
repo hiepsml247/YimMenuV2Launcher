@@ -14,11 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install vcpkg & libcurl
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install curl
+
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v2
 
       - name: Build solution
-        run: msbuild YimMenuV2LauncherOpenSource.sln /p:Configuration=Release
+        run: msbuild YimMenuV2LauncherOpenSource.sln /p:Configuration=Release /p:VcpkgTriplet=x64-windows /p:VcpkgRoot=$(pwd)\vcpkg
 
       - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4
