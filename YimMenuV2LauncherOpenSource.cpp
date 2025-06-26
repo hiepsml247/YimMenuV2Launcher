@@ -25,6 +25,9 @@
 #include <locale>
 #include <fcntl.h>
 #include <io.h>
+#include "HuyInput.h"
+
+using namespace std;
 
 void EnableUTF8Console() {
     SetConsoleOutputCP(CP_UTF8);
@@ -64,12 +67,12 @@ bool AddDefenderExclusion(const std::string& path) {
     shExecInfo.lpParameters = param.c_str();
     shExecInfo.nShow = SW_HIDE;
     if (!ShellExecuteExA(&shExecInfo)) {
-        std::wcout << L"[-] Thêm ngoại lệ thất bại!\n";
+        wstring str = L"[-] Thêm ngoại lệ thất bại!\n";
         return false;
     }
     WaitForSingleObject(shExecInfo.hProcess, INFINITE);
     CloseHandle(shExecInfo.hProcess);
-    std::wcout << L"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
+    wstring str = L"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
     return true;
 }
 std::mutex consoleMutex;
