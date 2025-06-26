@@ -110,7 +110,7 @@ void draw_interface(const std::string& coloredStatus, const std::string& colored
     std::lock_guard<std::mutex> lock(consoleMutex);
     clear_console_screen();
     std::cout << asciiArt << "\n";
-    std::cout << "[+] Status: " << coloredStatus << " | " << coloredStage << "\n\n";
+    std::cout << "[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
     std::cout << "[1] Inject\n" << "[2] Delete cache\n" << "[3] Discord\n" << "[99] Exit\n\n";
     std::cout << "Choose option: ";
     std::cout.flush();
@@ -324,6 +324,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
+    SetConsoleOutputCP(65001);
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
