@@ -354,140 +354,17 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
-     system("chcp 65001");
-     std::locale::global(std::locale("vi_VN.utf8"));
-     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
-#ifdef _WIN64
-    std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
-#else
-    std::cout << "\033[33m[!] WARNING: Running as 32-bit process\033[0m\n";
-#endif
-    std::cout << "\033[36m[*] Checking dependencies...\033[0m\n";
-    if (!is_vcredist_installed()) {
-        std::cout << "\033[33m[!] Visual C++ Redistributable not found. Installing...\033[0m\n";
-        if (!download_and_install_vcredist()) {
-            std::cerr << "\033[31m[-] Could not install dependency. Aborting.\033[0m\n";
-            return 1;
-        }
-    }
-    else {
-        std::cout << "\033[32m[+] Visual C++ Redistributable is already installed.\033[0m\n";
-    }
-    prepare_temp_directory_and_download();
-    std::wstring targetProcess = L"GTA5_Enhanced.exe";
-    std::atomic<bool> injected(false);
-    std::atomic<bool> gameDetected(false);
-    int messageLine = 20;
-    std::string lastColoredStatus, lastColoredStage;
-    std::string json_response = fetch_active_status();
-    auto statusPair = parse_status(json_response);
-    std::string coloredStatus = "\033[" + statusPair.second + "m" + statusPair.first + "\033[0m";
-    draw_interface(coloredStatus, "\033[33mWaiting for the game...\033[0m");
-    std::thread monitorThread([&]() {
-        while (true) {
-            bool nowDetected = is_process_running(targetProcess);
-            gameDetected = nowDetected;
-            if (!nowDetected) injected = false;
-            std::string stageColor = nowDetected ? (injected ? "32" : "33") : "33";
-            std::string stageText = nowDetected ? (injected ? "Injected!" : "Game Detected, Ready to inject") : "Waiting for the game...";
-            std::string coloredStage = "\033[" + stageColor + "m" + stageText + "\033[0m";
-            if (coloredStage != lastColoredStage || coloredStatus != lastColoredStatus) {
-                draw_interface(coloredStatus, coloredStage);
-                lastColoredStage = coloredStage;
-                lastColoredStatus = coloredStatus;
-            }
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-        });
-    std::string inputLine;
-    while (true) {
-        std::getline(std::cin, inputLine);
-        int option;
-        try {
-            option = std::stoi(inputLine);
-        }
-        catch (...) {
-            print_temporary_message("[!] Invalid option.", messageLine);
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
-            continue;
-        }
-        switch (option) {
-        case 1: {
-            if (gameDetected) {
-                if (!injected) {
-                    char tempPath[MAX_PATH];
-                    GetTempPathA(MAX_PATH, tempPath);
-                    std::string fullDllPath = std::string(tempPath) + "YimLoaderV2\\YimMenuV2.dll";
-                    DWORD pid = get_process_id(targetProcess);
-                    if (pid == 0) {
-                        print_temporary_message("[-] Processo não encontrado!", messageLine);
-                        break;
-                    }
-                    std::cout << "[DEBUG] Injetando DLL: " << fullDllPath << "\n";
-                    if (inject_dll(pid, fullDllPath)) {
-                        injected = true;
-                        print_temporary_message("[+] DLL injected successfully!", messageLine);
-                    }
-                    else {
-                        print_temporary_message("[-] DLL injection failed.", messageLine);
-                    }
-                }
-                else {
-                    print_temporary_message("[!] Already injected.", messageLine);
-                }
-            }
-            else {
-                print_temporary_message("[-] Game not detected, cannot inject!", messageLine);
-            }
+    // Đặt console về UTF-8
+    system("chcp 65001");
+    SetConsoleOutputCP(CP_UTF8);
 
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
-            break;
-        }
-        case 2: {
-            show_delete_cache_options(messageLine);
-            int deleteOption;
-            std::cin >> deleteOption;
-            std::cin.ignore(10000, '\n');
-            if (deleteOption == 1) {
-                delete_yimmenu_cache();
-            }
-            else if (deleteOption == 2) {
-                delete_launcher_cache();
-            }
-            else {
-                print_temporary_message("[!] Invalid option.", messageLine);
-            }
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
-            break;
-        }
-        case 3:
-            system("start https://discord.gg/vwRsEjEsxb");
-            print_temporary_message("[+] Discord opened.", messageLine);
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
-            break;
-        case 99:
-            print_temporary_message("[+] Exiting...", messageLine);
-            monitorThread.detach();
-            return 0;
-        default:
-            print_temporary_message("[!] Invalid option.", messageLine);
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
-            break;
-        }
-    }
+    // Đặt mode cho stdout/stderr (dành cho std::cout, std::wcout)
+    _setmode(_fileno(stdout), _O_U8TEXT);
+    _setmode(_fileno(stdin), _O_U8TEXT);
+
+    // In thử
+    std::wcout << L"Xin chào, đây là tiếng Việt có dấu: ẦẦỀỀễậẫốờởỡợ!\n";
+    std::wcout << L"Chúc bạn thành công!\n";
+
+    return 0;
 }
