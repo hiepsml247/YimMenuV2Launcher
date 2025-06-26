@@ -1,7 +1,7 @@
 {
-  "name": "yim-menu-v2-launcher",
-  "version-string": "1.0.0",
-  "dependencies": [
-    "curl"
-  ]
+    "name": "yimmenuv2launcher",
+    "version-string": "0.1.0",
+    "dependencies": [
+        "curl"
+    ]
 }
