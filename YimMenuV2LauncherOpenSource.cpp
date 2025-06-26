@@ -1,4 +1,4 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -362,10 +362,6 @@ int main() {
     _setmode(_fileno(stdout), _O_U8TEXT);
     _setmode(_fileno(stdin), _O_U8TEXT);
 
-    // In thử
-    std::wcout << L"Xin chào, đây là tiếng Việt có dấu: ẦẦỀỀễậẫốờởỡợ!\n";
-    std::wcout << L"Chúc bạn thành công!\n";
-    
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
