@@ -18,7 +18,7 @@ jobs:
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install curl
+          .\vcpkg\vcpkg install
 
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v2
