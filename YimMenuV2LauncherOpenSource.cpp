@@ -25,9 +25,7 @@
 #include <locale>
 #include <fcntl.h>
 #include <io.h>
-#include "HuyInput.h"
 
-using namespace std;
 
 void EnableUTF8Console() {
     SetConsoleOutputCP(CP_UTF8);
