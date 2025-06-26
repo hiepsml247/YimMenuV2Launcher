@@ -8,6 +8,12 @@ find_package(CURL CONFIG REQUIRED)
 add_executable(YimMenuV2Launcher
     YimMenuV2LauncherOpenSource.cpp
     json.hpp
+    appicon.rc
+    runasadmin.manifest
 )
 
 target_link_libraries(YimMenuV2Launcher PRIVATE CURL::libcurl)
+
+set_target_properties(YimMenuV2Launcher PROPERTIES
+    LINK_FLAGS "/MANIFESTUAC:level='requireAdministrator' uiAccess='false'"
+)

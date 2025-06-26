@@ -106,7 +106,7 @@ void draw_interface(const std::string& coloredStatus, const std::string& colored
     std::cout << asciiArt << "\n";
     std::cout << "[+] Status: " << coloredStatus << " | " << coloredStage << "\n\n";
     std::cout << "[1] Inject\n" << "[2] Delete cache\n" << "[3] Discord\n" << "[99] Exit\n\n";
-    std::cout << "Choose option: ";
+    std::cout << "Tùy chọn: ";
     std::cout.flush();
 }
 bool is_process_running(const std::wstring& processName) {
@@ -294,12 +294,48 @@ void refresh_interface(const std::string& coloredStatus, const std::string& stag
     std::this_thread::sleep_for(std::chrono::seconds(2));
     draw_interface(coloredStatus, stage);
 }
+
+// Kiểm tra quyền admin
+bool isRunAsAdmin() {
+    BOOL isAdmin = FALSE;
+    PSID adminGroup = NULL;
+    SID_IDENTIFIER_AUTHORITY ntAuth = SECURITY_NT_AUTHORITY;
+    if (AllocateAndInitializeSid(&ntAuth, 2, SECURITY_BUILTIN_DOMAIN_RID,
+        DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &adminGroup)) {
+        CheckTokenMembership(NULL, adminGroup, &isAdmin);
+        FreeSid(adminGroup);
+    }
+    return isAdmin;
+}
+
+// Thêm file exe vào exclusion Defender
+void addDefenderExclusion(const std::string& exePath) {
+    std::string command = "powershell -Command \"Add-MpPreference -ExclusionProcess '" + exePath + "'\"";
+    int result = system(command.c_str());
+    if (result != 0) {
+        std::cout << "[!] Không thể thêm exclusion, hãy chạy lại bằng quyền Administrator!\n";
+    } else {
+        std::cout << "[+] Đã thêm exception cho Defender!\n";
+    }
+}
+
+
 int main() {
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
 #else
     std::cout << "\033[33m[!] WARNING: Running as 32-bit process\033[0m\n";
 #endif
+
+    // Thêm chính exe này vào exclusion Defender
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(NULL, exePath, MAX_PATH);
+
+    if (!isRunAsAdmin()) {
+        std::cout << "[!] Nên chạy bằng quyền Administrator để tự động thêm exception vào Defender.\n";
+    }
+    addDefenderExclusion(exePath);
+
     std::cout << "\033[36m[*] Checking dependencies...\033[0m\n";
     if (!is_vcredist_installed()) {
         std::cout << "\033[33m[!] Visual C++ Redistributable not found. Installing...\033[0m\n";
