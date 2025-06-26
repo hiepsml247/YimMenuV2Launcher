@@ -1,4 +1,4 @@
-name: Build CMake Project
+name: Build YimMenuV2Launcher
 
 on:
   push:
