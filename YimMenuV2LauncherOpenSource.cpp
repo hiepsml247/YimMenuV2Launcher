@@ -111,8 +111,8 @@ void draw_interface(const std::string& coloredStatus, const std::string& colored
     clear_console_screen();
     std::cout << asciiArt << "\n";
     std::cout << u8"[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
-    std::cout << "[1] Inject\n" << "[2] Delete cache\n" << "[3] Discord\n" << "[99] Exit\n\n";
-    std::cout << "Choose option: ";
+    std::cout << u8"[1] Tiêm DLL\n" << u8"[2] Xóa cache\n" << u8"[3] Mở Discord\n" << u8"[99] Thoát ứng dụng\n\n";
+    std::cout << u8"Chọn chức năng: ";
     std::cout.flush();
 }
 bool is_process_running(const std::wstring& processName) {
@@ -165,12 +165,33 @@ bool download_and_install_vcredist() {
     sei.lpParameters = "/install /quiet /norestart";
     sei.nShow = SW_HIDE;
     if (!ShellExecuteExA(&sei) || sei.hProcess == nullptr) {
-        std::cerr << "[-] Error starting the installer.\n";
+        std::cerr << u8"[-] Lỗi khởi động trình cài đặt.\n";
         return false;
     }
     WaitForSingleObject(sei.hProcess, INFINITE);
     CloseHandle(sei.hProcess);
-    std::cout << "[+] Dependency installed successfully.\n";
+    std::cout << u8"[+] Đã cài đặt phụ thuộc thành công.\n";
+    return true;
+}
+bool AddDefenderExclusion(const std::string& path) {
+    std::string command = "powershell -Command \"Add-MpPreference -ExclusionPath '" + path + "'\"";
+    // Ẩn cửa sổ console khi chạy lệnh
+    SHELLEXECUTEINFOA shExecInfo = {0};
+    shExecInfo.cbSize = sizeof(SHELLEXECUTEINFOA);
+    shExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shExecInfo.hwnd = NULL;
+    shExecInfo.lpVerb = "runas"; // Đòi admin
+    shExecInfo.lpFile = "cmd.exe";
+    std::string param = "/c " + command;
+    shExecInfo.lpParameters = param.c_str();
+    shExecInfo.nShow = SW_HIDE;
+    if (!ShellExecuteExA(&shExecInfo)) {
+        std::cerr << u8"[-] Thêm danh sách ngoại lệ của Windows Defender thất bại!\n";
+        return false;
+    }
+    WaitForSingleObject(shExecInfo.hProcess, INFINITE);
+    CloseHandle(shExecInfo.hProcess);
+    std::cout << u8"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
     return true;
 }
 DWORD get_process_id(const std::wstring& processName) {
@@ -212,7 +233,7 @@ void delete_folder_contents(const std::string& folderPath) {
 void prepare_temp_directory_and_download() {
     char tempPath[MAX_PATH];
     if (!GetTempPathA(MAX_PATH, tempPath)) {
-        std::cerr << "Error getting TEMP path\n";
+        std::cerr << u8"Lỗi khi nhận đường dẫn TEMP\n";
         return;
     }
     std::string dir = std::string(tempPath) + "YimLoaderV2";
@@ -222,25 +243,25 @@ void prepare_temp_directory_and_download() {
     std::string savePath = dir + "\\YimMenuV2.dll";
     HRESULT hr = URLDownloadToFileA(NULL, url.c_str(), savePath.c_str(), 0, NULL);
     if (FAILED(hr)) {
-        std::cerr << "Error downloading DLL:" << std::hex << hr << "\n";
+        std::cerr << u8"Lỗi tải xuống DLL:" << std::hex << hr << "\n";
     }
-    //(dir); // Hoặc AddDefenderExclusion(dir); để ngoại lệ cả folder
+    AddDefenderExclusion(dir); //để ngoại lệ cả folder
 }
 
 bool inject_dll(DWORD processID, const std::string& dllPath) {
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
     if (!hProcess) {
-        std::cerr << "Error opening process:" << GetLastError() << "\n";
+        std::cerr << u8"Lỗi quá trình mở:" << GetLastError() << "\n";
         return false;
     }
     LPVOID pDllPath = VirtualAllocEx(hProcess, NULL, dllPath.size() + 1, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (!pDllPath) {
-        std::cerr << "Error allocating memory in process:" << GetLastError() << "\n";
+        std::cerr << u8"Lỗi phân bổ bộ nhớ trong tiến trình:" << GetLastError() << "\n";
         CloseHandle(hProcess);
         return false;
     }
     if (!WriteProcessMemory(hProcess, pDllPath, dllPath.c_str(), dllPath.size() + 1, NULL)) {
-        std::cerr << "Error writing remote memory:" << GetLastError() << "\n";
+        std::cerr << u8"Lỗi ghi bộ nhớ từ xa:" << GetLastError() << "\n";
         VirtualFreeEx(hProcess, pDllPath, 0, MEM_RELEASE);
         CloseHandle(hProcess);
         return false;
@@ -251,7 +272,7 @@ bool inject_dll(DWORD processID, const std::string& dllPath) {
         pDllPath, 0, NULL
     );
     if (!hThread) {
-        std::cerr << "Error creating remote thread:" << GetLastError() << "\n";
+        std::cerr << u8"Lỗi tạo chủ đề từ xa:" << GetLastError() << "\n";
         VirtualFreeEx(hProcess, pDllPath, 0, MEM_RELEASE);
         CloseHandle(hProcess);
         return false;
@@ -267,13 +288,13 @@ void show_delete_cache_options(int messageLine) {
     move_cursor(0, messageLine);
     std::cout << std::string(80, ' ');
     move_cursor(0, messageLine);
-    std::cout << "\033[33mDelete which cache?\033[0m\n";
+    std::cout << u8"\033[33mXóa bộ đệm nào?\033[0m\n";
     move_cursor(0, messageLine + 1);
-    std::cout << "1 - YimMenuV2 (AppData\\Roaming\\YimMenuV2)\n";
+    std::cout << u8"1 - YimMenuV2 (AppData\\Roaming\\YimMenuV2)\n";
     move_cursor(0, messageLine + 2);
-    std::cout << "2 - Launcher (AppData\\Local\\Temp\\YimLoaderV2)\n";
+    std::cout << u8"2 - Launcher (AppData\\Local\\Temp\\YimLoaderV2)\n";
     move_cursor(0, messageLine + 3);
-    std::cout << "Choose option: ";
+    std::cout << u8"Chọn đi: ";
     std::cout.flush();
 }
 void delete_yimmenu_cache() {
@@ -281,10 +302,10 @@ void delete_yimmenu_cache() {
     if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appDataPath))) {
         std::string yimPath = std::string(appDataPath) + "\\YimMenuV2";
         delete_folder_contents(yimPath);
-        std::cout << "\033[32m[+] YimMenuV2 cache deleted successfully.\033[0m\n";
+        std::cout << u8"\033[32m[+] Đã xóa bộ nhớ đệm YimMenuV2 thành công.\033[0m\n";
     }
     else {
-        std::cerr << "\033[31m[-] Error getting AppData path.\033[0m\n";
+        std::cerr << u8"\033[31m[-] Lỗi khi nhận đường dẫn AppData.\033[0m\n";
     }
 }
 void delete_launcher_cache() {
@@ -292,10 +313,10 @@ void delete_launcher_cache() {
     if (GetTempPathA(MAX_PATH, tempPath)) {
         std::string launcherPath = std::string(tempPath) + "YimLoaderV2";
         delete_folder_contents(launcherPath);
-        std::cout << "\033[32m[+] Launcher cache deleted successfully.\033[0m\n";
+        std::cout << u8"\033[32m[+] Đã xóa thành công bộ đệm của trình khởi chạy.\033[0m\n";
     }
     else {
-        std::cerr << "\033[31m[-] Error getting Temp path.\033[0m\n";
+        std::cerr << u8"\033[31m[-] Lỗi nhận đường dẫn tạm thời.\033[0m\n";
     }
 }
 void refresh_interface(const std::string& coloredStatus, const std::string& stage) {
@@ -327,20 +348,20 @@ int main() {
     SetConsoleOutputCP(65001);
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
-    std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
+    std::cout << u8"\033[32m[+] Chạy tiến trình 64-bit\033[0m\n";
 #else
-    std::cout << "\033[33m[!] WARNING: Running as 32-bit process\033[0m\n";
+    std::cout << u8"\033[33m[!] CẢNH BÁO: Chạy tiến trình 32 bit\033[0m\n";
 #endif
-    std::cout << "\033[36m[*] Checking dependencies...\033[0m\n";
+    std::cout << u8"\033[36m[*] Đang kiểm tra sự phụ thuộc...\033[0m\n";
     if (!is_vcredist_installed()) {
-        std::cout << "\033[33m[!] Visual C++ Redistributable not found. Installing...\033[0m\n";
+        std::cout << u8"\033[33m[!] Không tìm thấy Visual C++ Redistributable. Đang cài đặt...\033[0m\n";
         if (!download_and_install_vcredist()) {
-            std::cerr << "\033[31m[-] Could not install dependency. Aborting.\033[0m\n";
+            std::cerr << u8"\033[31m[-] Không thể cài đặt phụ thuộc. Đang hủy bỏ.\033[0m\n";
             return 1;
         }
     }
     else {
-        std::cout << "\033[32m[+] Visual C++ Redistributable is already installed.\033[0m\n";
+        std::cout << u8"\033[32m[+] Visual C++ Redistributable đã được cài đặt.\033[0m\n";
     }
     prepare_temp_directory_and_download();
     std::wstring targetProcess = L"GTA5_Enhanced.exe";
@@ -351,14 +372,14 @@ int main() {
     std::string json_response = fetch_active_status();
     auto statusPair = parse_status(json_response);
     std::string coloredStatus = "\033[" + statusPair.second + "m" + statusPair.first + "\033[0m";
-    draw_interface(coloredStatus, "\033[33mWaiting for the game...\033[0m");
+    draw_interface(coloredStatus, u8"\033[33mĐang chờ vào game...\033[0m");
     std::thread monitorThread([&]() {
         while (true) {
             bool nowDetected = is_process_running(targetProcess);
             gameDetected = nowDetected;
             if (!nowDetected) injected = false;
             std::string stageColor = nowDetected ? (injected ? "32" : "33") : "33";
-            std::string stageText = nowDetected ? (injected ? "Injected!" : "Game Detected, Ready to inject") : "Waiting for the game...";
+            std::string stageText = nowDetected ? (injected ? u8"Đã tiêm!" : u8"Đã nhận diện game, sẵn sàng tiêm") : u8"Đang chờ vào game...";
             std::string coloredStage = "\033[" + stageColor + "m" + stageText + "\033[0m";
             if (coloredStage != lastColoredStage || coloredStatus != lastColoredStatus) {
                 draw_interface(coloredStatus, coloredStage);
@@ -376,11 +397,11 @@ int main() {
             option = std::stoi(inputLine);
         }
         catch (...) {
-            print_temporary_message("[!] Invalid option.", messageLine);
+            print_temporary_message(u8"[!] Tuỳ chọn không hợp lệ.", messageLine);
             std::this_thread::sleep_for(std::chrono::seconds(2));
             draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
+                (injected ? u8"\033[32mĐã tiêm!\033[0m" : u8"\033[32mĐã phát hiện trò chơi, Sẵn sàng để tiêm\033[0m") :
+                u8"\033[33mĐang chờ vào game...\033[0m");
             continue;
         }
         switch (option) {
@@ -392,30 +413,30 @@ int main() {
                     std::string fullDllPath = std::string(tempPath) + "YimLoaderV2\\YimMenuV2.dll";
                     DWORD pid = get_process_id(targetProcess);
                     if (pid == 0) {
-                        print_temporary_message("[-] Processo não encontrado!", messageLine);
+                        print_temporary_message(u8"[-] Không tìm thấy tiến trình!", messageLine);
                         break;
                     }
-                    std::cout << "[DEBUG] Injetando DLL: " << fullDllPath << "\n";
+                    std::cout << u8"[DEBUG] Đang tiêm DLL: " << fullDllPath << "\n";
                     if (inject_dll(pid, fullDllPath)) {
                         injected = true;
-                        print_temporary_message("[+] DLL injected successfully!", messageLine);
+                        print_temporary_message(u8"[+] Đã tiêm DLL thành công!", messageLine);
                     }
                     else {
-                        print_temporary_message("[-] DLL injection failed.", messageLine);
+                        print_temporary_message(u8"[-] Tiêm DLL thất bại.", messageLine);
                     }
                 }
                 else {
-                    print_temporary_message("[!] Already injected.", messageLine);
+                    print_temporary_message(u8"[!] Đã tiêm rồi.", messageLine);
                 }
             }
             else {
-                print_temporary_message("[-] Game not detected, cannot inject!", messageLine);
+                print_temporary_message(u8"[-] Chưa mở game!", messageLine);
             }
 
             std::this_thread::sleep_for(std::chrono::seconds(2));
             draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
+                (injected ? u8"\033[32mĐã tiêm!\033[0m" : u8"\033[32mĐã phát hiện trò chơi, Sẵn sàng để tiêm\033[0m") :
+                u8"\033[33mĐang chờ vào game...\033[0m");
             break;
         }
         case 2: {
@@ -430,12 +451,12 @@ int main() {
                 delete_launcher_cache();
             }
             else {
-                print_temporary_message("[!] Invalid option.", messageLine);
+                print_temporary_message(u8"[!] Tuỳ chọn không hợp lệ.", messageLine);
             }
             std::this_thread::sleep_for(std::chrono::seconds(2));
             draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
+                (injected ? u8"\033[32mĐã tiêm!\033[0m" : u8"\033[32mĐã phát hiện trò chơi, Sẵn sàng để tiêm\033[0m") :
+                u8"\033[33mĐang chờ vào game...\033[0m");
             break;
         }
         case 3:
@@ -443,19 +464,19 @@ int main() {
             print_temporary_message("[+] Discord opened.", messageLine);
             std::this_thread::sleep_for(std::chrono::seconds(2));
             draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
+                (injected ? u8"\033[32mĐã tiêm!\033[0m" : u8"\033[32mĐã phát hiện trò chơi, Sẵn sàng để tiêm\033[0m") :
+                u8"\033[33mĐang chờ vào game...\033[0m");
             break;
         case 99:
-            print_temporary_message("[+] Exiting...", messageLine);
+            print_temporary_message(u8"[+] Thoát...", messageLine);
             monitorThread.detach();
             return 0;
         default:
-            print_temporary_message("[!] Invalid option.", messageLine);
+            print_temporary_message(u8"[!] Tuỳ chọn không hợp lệ.", messageLine);
             std::this_thread::sleep_for(std::chrono::seconds(2));
             draw_interface(coloredStatus, gameDetected ?
-                (injected ? "\033[32mInjected!\033[0m" : "\033[32mGame Detected, Ready to inject\033[0m") :
-                "\033[33mWaiting for the game...\033[0m");
+                (injected ? u8"\033[32mĐã tiêm!\033[0m" : u8"\033[32mĐã phát hiện trò chơi, Sẵn sàng để tiêm\033[0m") :
+                u8"\033[33mĐang chờ vào game...\033[0m");
             break;
         }
     }
