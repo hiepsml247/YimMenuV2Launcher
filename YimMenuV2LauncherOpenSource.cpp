@@ -26,6 +26,15 @@
 #include <fcntl.h>
 #include <io.h>
 
+void EnableUTF8Console() {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    // Giúp cout, wcout hiểu UTF-8, hỗ trợ luôn nhập/xuất wstring
+    std::ios_base::sync_with_stdio(false);
+    std::wcin.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+    std::wcout.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+}
+
 using json = nlohmann::json;
 const std::string asciiArt = "\033[35m\n"
 " d8888b    888      d8b          888        d8888b   888b     d888 888         \n"   
@@ -42,27 +51,27 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
     return size * nmemb;
 }
 
-bool AddDefenderExclusion(const std::wstring& path) {
-    std::wstring command = L"powershell -Command \"Add-MpPreference -ExclusionPath '" + path + L"'\"";
-    SHELLEXECUTEINFOW shExecInfo = { 0 };
-    shExecInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
+bool AddDefenderExclusion(const std::string& path) {
+    std::string command = "powershell -Command \"Add-MpPreference -ExclusionPath '" + path + "'\"";
+    // Ẩn cửa sổ console khi chạy lệnh
+    SHELLEXECUTEINFOA shExecInfo = {0};
+    shExecInfo.cbSize = sizeof(SHELLEXECUTEINFOA);
     shExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
     shExecInfo.hwnd = NULL;
-    shExecInfo.lpVerb = L"runas";
-    shExecInfo.lpFile = L"cmd.exe";
-    std::wstring param = L"/c " + command;
+    shExecInfo.lpVerb = "runas"; // Đòi admin
+    shExecInfo.lpFile = "cmd.exe";
+    std::string param = "/c " + command;
     shExecInfo.lpParameters = param.c_str();
     shExecInfo.nShow = SW_HIDE;
-    if (!ShellExecuteExW(&shExecInfo)) {
-        std::wcerr << L"[-] Thêm ngoại lệ thất bại!\n";
+    if (!ShellExecuteExA(&shExecInfo)) {
+        std::cerr << u8"[-] Thêm ngoại lệ thất bại!\n";
         return false;
     }
     WaitForSingleObject(shExecInfo.hProcess, INFINITE);
     CloseHandle(shExecInfo.hProcess);
-    std::wcout << L"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
+    std::cout << u8"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
     return true;
 }
-
 std::mutex consoleMutex;
 std::string fetch_active_status() {
     CURL* curl = curl_easy_init();
@@ -119,22 +128,22 @@ void move_cursor(int x, int y) {
     COORD pos = { static_cast<SHORT>(x), static_cast<SHORT>(y) };
     SetConsoleCursorPosition(hConsole, pos);
 }
-void print_temporary_message(const std::wstring& message, int messageLine) {
+void print_temporary_message(const std::string& message, int messageLine) {
     std::lock_guard<std::mutex> lock(consoleMutex);
     move_cursor(0, messageLine);
-    std::wcout << std::wstring(80, L' ');
+    std::cout << std::string(80, ' ');
     move_cursor(0, messageLine);
-    std::wcout << message;
-    std::wcout.flush();
+    std::cout << message;
+    std::cout.flush();
 }
-void draw_interface(const std::wstring& coloredStatus, const std::wstring& coloredStage) {
+void draw_interface(const std::string& coloredStatus, const std::string& coloredStage) {
     std::lock_guard<std::mutex> lock(consoleMutex);
     clear_console_screen();
-    std::wcout << asciiArt << L"\n";
-    std::wcout << L"[+] Trạng thái: " << coloredStatus << L" | " << coloredStage << L"\n\n";
-    std::wcout << L"[1] Tiêm DLL\n" << L"[2] Xóa cache\n" << L"[3] Mở Discord\n" << L"[99] Thoát ứng dụng\n\n";
-    std::wcout << L"Chọn chức năng: ";
-    std::wcout.flush();
+    std::cout << asciiArt << "\n";
+    std::cout << u8"[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
+    std::cout << u8"[1] Tiêm DLL\n" << u8"[2] Xóa cache\n" << u8"[3] Mở Discord\n" << u8"[99] Thoát ứng dụng\n\n";
+    std::cout << u8"Chọn chức năng: ";
+    std::cout.flush();
 }
 bool is_process_running(const std::wstring& processName) {
     HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -345,8 +354,8 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
-     _setmode(_fileno(stdout), _O_U16TEXT);
-     _setmode(_fileno(stdin), _O_U16TEXT);
+     system("chcp 65001");
+     std::locale::global(std::locale("vi_VN.utf8"));
      SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
