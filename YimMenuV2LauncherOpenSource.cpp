@@ -355,7 +355,6 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
-    SetConsoleOutputCP(65001);
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
