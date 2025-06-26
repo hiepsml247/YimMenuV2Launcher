@@ -3,8 +3,7 @@ project(YimMenuV2Launcher)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Tích hợp vcpkg (GitHub Actions tự nhận)
-find_package(CURL REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 
 add_executable(YimMenuV2Launcher
     YimMenuV2LauncherOpenSource.cpp
