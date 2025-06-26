@@ -14,6 +14,14 @@ add_executable(YimMenuV2Launcher
 target_link_libraries(YimMenuV2Launcher PRIVATE CURL::libcurl)
 
 # Manifest và icon
+add_executable(YimMenuV2Launcher
+    YimMenuV2LauncherOpenSource.cpp
+    json.hpp
+    appicon.rc
+    runasadmin.manifest
+)
+
 set_target_properties(YimMenuV2Launcher PROPERTIES
-    LINK_FLAGS "/MANIFESTUAC:level='requireAdministrator' uiAccess='false'"
+  VS_GLOBAL_EnableManifest true
+  VS_GLOBAL_ApplicationManifest "runasadmin.manifest"
 )
