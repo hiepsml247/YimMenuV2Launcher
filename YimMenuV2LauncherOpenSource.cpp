@@ -110,7 +110,7 @@ void draw_interface(const std::string& coloredStatus, const std::string& colored
     std::lock_guard<std::mutex> lock(consoleMutex);
     clear_console_screen();
     std::cout << asciiArt << "\n";
-    cout << "[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
+    std::cout << u8"[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
     std::cout << "[1] Inject\n" << "[2] Delete cache\n" << "[3] Discord\n" << "[99] Exit\n\n";
     std::cout << "Choose option: ";
     std::cout.flush();
