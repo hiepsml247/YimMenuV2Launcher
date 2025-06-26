@@ -11,24 +11,18 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install vcpkg & libcurl
+      - name: Install vcpkg & dependencies
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
           .\vcpkg\vcpkg install
 
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v2
+      - name: Set VCPKG_ROOT environment variable
+        run: echo "VCPKG_ROOT=$(pwd)/vcpkg" >> $GITHUB_ENV
+
+      - uses: microsoft/setup-msbuild@v2
 
       - name: Build solution
-        run: msbuild YimMenuV2LauncherOpenSource.sln /p:Configuration=Release /p:VcpkgTriplet=x64-windows /p:VcpkgRoot=$(pwd)\vcpkg
-
-      - name: Upload EXE Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: YimMenuV2LauncherExe
-          path: |
-            **\*.exe
+        run: msbuild YimMenuV2LauncherOpenSource.sln /p:Configuration=Release
