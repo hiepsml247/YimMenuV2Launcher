@@ -64,12 +64,12 @@ bool AddDefenderExclusion(const std::string& path) {
     shExecInfo.lpParameters = param.c_str();
     shExecInfo.nShow = SW_HIDE;
     if (!ShellExecuteExA(&shExecInfo)) {
-        std::cerr << u8"[-] Thêm ngoại lệ thất bại!\n";
+        std::wcout << L"[-] Thêm ngoại lệ thất bại!\n";
         return false;
     }
     WaitForSingleObject(shExecInfo.hProcess, INFINITE);
     CloseHandle(shExecInfo.hProcess);
-    std::cout << u8"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
+    std::wcout << L"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
     return true;
 }
 std::mutex consoleMutex;
@@ -354,13 +354,8 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
-    // Đặt console về UTF-8
-    system("chcp 65001");
-    SetConsoleOutputCP(CP_UTF8);
-
-    // Đặt mode cho stdout/stderr (dành cho std::cout, std::wcout)
-    _setmode(_fileno(stdout), _O_U8TEXT);
-    _setmode(_fileno(stdin), _O_U8TEXT);
+    _setmode(_fileno(stdin), _O_U16TEXT);
+    _setmode(_fileno(stdout), _O_U16TEXT);
 
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
