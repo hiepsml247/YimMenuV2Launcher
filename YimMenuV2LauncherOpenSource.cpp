@@ -67,14 +67,12 @@ bool AddDefenderExclusion(const std::string& path) {
     shExecInfo.lpParameters = param.c_str();
     shExecInfo.nShow = SW_HIDE;
     if (!ShellExecuteExA(&shExecInfo)) {
-        wstring str = L"[-] Thêm ngoại lệ thất bại!\n";
-        wcout << str;
+        wcout << L"[-] Thêm ngoại lệ thất bại!\n";
         return false;
     }
     WaitForSingleObject(shExecInfo.hProcess, INFINITE);
     CloseHandle(shExecInfo.hProcess);
-    wstring str2 = L"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
-    wcout << str2;
+    wcout << L"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
     return true;
 }
 std::mutex consoleMutex;
@@ -359,6 +357,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
+    _setmode(_fileno(stdout), _O_U16TEXT);
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
