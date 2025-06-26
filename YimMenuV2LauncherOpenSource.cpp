@@ -141,9 +141,9 @@ void draw_interface(const std::string& coloredStatus, const std::string& colored
     std::lock_guard<std::mutex> lock(consoleMutex);
     clear_console_screen();
     std::cout << asciiArt << "\n";
-    std::wcout << L"[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
-    std::wcout << L"[1] Tiêm DLL\n" << L"[2] Xóa cache\n" << L"[3] Mở Discord\n" << L"[99] Thoát ứng dụng\n\n";
-    std::wcout << L"Chọn chức năng: ";
+    std::cout << "[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
+    std::cout << "[1] Tiêm DLL\n" << "[2] Xóa cache\n" << "[3] Mở Discord\n" << "[99] Thoát ứng dụng\n\n";
+    std::cout << "Chọn chức năng: ";
     std::cout.flush();
 }
 bool is_process_running(const std::wstring& processName) {
@@ -355,8 +355,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
-    _setmode(_fileno(stdin), _O_WTEXT);
-    _setmode(_fileno(stdout), _O_WTEXT);
+    SetConsoleOutputCP(65001);
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
