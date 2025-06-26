@@ -21,6 +21,18 @@
 #include <iomanip>
 #include "json.hpp"
 #include <cstdlib>
+#include <codecvt>
+#include <locale>
+
+void EnableUTF8Console() {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    // Giúp cout, wcout hiểu UTF-8, hỗ trợ luôn nhập/xuất wstring
+    std::ios_base::sync_with_stdio(false);
+    std::wcin.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+    std::wcout.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+}
+
 using json = nlohmann::json;
 const std::string asciiArt = "\033[35m\n"
 " d8888b    888      d8b          888        d8888b   888b     d888 888         \n"   
@@ -50,12 +62,12 @@ bool AddDefenderExclusion(const std::string& path) {
     shExecInfo.lpParameters = param.c_str();
     shExecInfo.nShow = SW_HIDE;
     if (!ShellExecuteExA(&shExecInfo)) {
-        std::cerr << "[-] Add Defender exclusion failed!\n";
+        std::cerr << u8"[-] Thêm ngoại lệ thất bại!\n";
         return false;
     }
     WaitForSingleObject(shExecInfo.hProcess, INFINITE);
     CloseHandle(shExecInfo.hProcess);
-    std::cout << "[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
+    std::cout << u8"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
     return true;
 }
 std::mutex consoleMutex;
@@ -126,9 +138,9 @@ void draw_interface(const std::string& coloredStatus, const std::string& colored
     std::lock_guard<std::mutex> lock(consoleMutex);
     clear_console_screen();
     std::cout << asciiArt << "\n";
-    std::cout << "[+] Status: " << coloredStatus << " | " << coloredStage << "\n\n";
-    std::cout << "[1] Inject\n" << "[2] Delete cache\n" << "[3] Discord\n" << "[99] Exit\n\n";
-    std::cout << "Choose option: ";
+    std::cout << u8"[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
+    std::cout << u8"[1] Tiêm DLL\n" << u8"[2] Xóa cache\n" << u8"[3] Mở Discord\n" << u8"[99] Thoát ứng dụng\n\n";
+    std::cout << u8"Chọn chức năng: ";
     std::cout.flush();
 }
 bool is_process_running(const std::wstring& processName) {
@@ -340,6 +352,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
+     EnableUTF8Console();
      SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
