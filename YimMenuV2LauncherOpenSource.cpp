@@ -17,8 +17,6 @@
 #include <curl/curl.h>
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "libcurl.lib")
-#pragma comment(lib, "zlib.lib")
 #include <ctime>
 #include <iomanip>
 #include "json.hpp"
