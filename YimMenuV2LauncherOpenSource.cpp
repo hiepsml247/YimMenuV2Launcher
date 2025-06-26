@@ -23,6 +23,8 @@
 #include <cstdlib>
 #include <codecvt>
 #include <locale>
+#include <fcntl.h>
+#include <io.h>
 
 void EnableUTF8Console() {
     SetConsoleOutputCP(CP_UTF8);
@@ -62,12 +64,12 @@ bool AddDefenderExclusion(const std::string& path) {
     shExecInfo.lpParameters = param.c_str();
     shExecInfo.nShow = SW_HIDE;
     if (!ShellExecuteExA(&shExecInfo)) {
-        std::cerr << u8"[-] Thêm ngoại lệ thất bại!\n";
+        std::wcout  << "[-] Thêm ngoại lệ thất bại!\n";
         return false;
     }
     WaitForSingleObject(shExecInfo.hProcess, INFINITE);
     CloseHandle(shExecInfo.hProcess);
-    std::cout << u8"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
+    std::wcout  << "[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
     return true;
 }
 std::mutex consoleMutex;
@@ -352,7 +354,7 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 }
 
 int main() {
-     EnableUTF8Console();
+     _setmode(_fileno(stdout), _O_U16TEXT); // hoặc _O_U8TEXT với Windows 11
      SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #ifdef _WIN64
     std::cout << "\033[32m[+] Running as 64-bit process\033[0m\n";
