@@ -9,7 +9,7 @@ add_executable(YimMenuV2Launcher
     YimMenuV2LauncherOpenSource.cpp
     json.hpp
     appicon.rc
-    runasadmin.manifest
+    
 )
 
 target_link_libraries(YimMenuV2Launcher PRIVATE CURL::libcurl)
