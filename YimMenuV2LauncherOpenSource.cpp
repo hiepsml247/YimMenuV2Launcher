@@ -236,11 +236,11 @@ void prepare_temp_directory_and_download() {
         std::cerr << u8"Lỗi khi nhận đường dẫn TEMP\n";
         return;
     }
-    std::string dir = std::string(tempPath) + "YimLoaderV2";
+    std::string dir = std::string(tempPath) + "ChichSML";
     CreateDirectoryA(dir.c_str(), NULL);
     delete_folder_contents(dir);
-    std::string url = "https://github.com/YimMenu/YimMenuV2/releases/download/nightly/YimMenuV2.dll";
-    std::string savePath = dir + "\\YimMenuV2.dll";
+    std::string url = "https://github.com/hiepsml247/YimMenuV2/releases/download/nighty/ChichSML.dll";
+    std::string savePath = dir + "\\ChichSML.dll";
     HRESULT hr = URLDownloadToFileA(NULL, url.c_str(), savePath.c_str(), 0, NULL);
     if (FAILED(hr)) {
         std::cerr << u8"Lỗi tải xuống DLL:" << std::hex << hr << "\n";
@@ -290,9 +290,9 @@ void show_delete_cache_options(int messageLine) {
     move_cursor(0, messageLine);
     std::cout << u8"\033[33mXóa bộ đệm nào?\033[0m\n";
     move_cursor(0, messageLine + 1);
-    std::cout << u8"1 - YimMenuV2 (AppData\\Roaming\\YimMenuV2)\n";
+    std::cout << u8"1 - ChichSML (AppData\\Roaming\\ChichSML)\n";
     move_cursor(0, messageLine + 2);
-    std::cout << u8"2 - Launcher (AppData\\Local\\Temp\\YimLoaderV2)\n";
+    std::cout << u8"2 - Launcher (AppData\\Local\\Temp\\ChichSML)\n";
     move_cursor(0, messageLine + 3);
     std::cout << u8"Chọn đi: ";
     std::cout.flush();
@@ -300,9 +300,9 @@ void show_delete_cache_options(int messageLine) {
 void delete_yimmenu_cache() {
     char appDataPath[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appDataPath))) {
-        std::string yimPath = std::string(appDataPath) + "\\YimMenuV2";
+        std::string yimPath = std::string(appDataPath) + "\\ChichSML";
         delete_folder_contents(yimPath);
-        std::cout << u8"\033[32m[+] Đã xóa bộ nhớ đệm YimMenuV2 thành công.\033[0m\n";
+        std::cout << u8"\033[32m[+] Đã xóa bộ nhớ đệm ChichSML thành công.\033[0m\n";
     }
     else {
         std::cerr << u8"\033[31m[-] Lỗi khi nhận đường dẫn AppData.\033[0m\n";
@@ -311,7 +311,7 @@ void delete_yimmenu_cache() {
 void delete_launcher_cache() {
     char tempPath[MAX_PATH];
     if (GetTempPathA(MAX_PATH, tempPath)) {
-        std::string launcherPath = std::string(tempPath) + "YimLoaderV2";
+        std::string launcherPath = std::string(tempPath) + "ChichSML";
         delete_folder_contents(launcherPath);
         std::cout << u8"\033[32m[+] Đã xóa thành công bộ đệm của trình khởi chạy.\033[0m\n";
     }
@@ -410,7 +410,7 @@ int main() {
                 if (!injected) {
                     char tempPath[MAX_PATH];
                     GetTempPathA(MAX_PATH, tempPath);
-                    std::string fullDllPath = std::string(tempPath) + "YimLoaderV2\\YimMenuV2.dll";
+                    std::string fullDllPath = std::string(tempPath) + "ChichSML\\ChichSML.dll";
                     DWORD pid = get_process_id(targetProcess);
                     if (pid == 0) {
                         print_temporary_message(u8"[-] Không tìm thấy tiến trình!", messageLine);
