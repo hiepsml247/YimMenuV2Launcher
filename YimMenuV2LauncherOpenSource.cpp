@@ -460,7 +460,7 @@ int main() {
             break;
         }
         case 3:
-            system("start https://discord.gg/vwRsEjEsxb");
+            system("start https://discord.gg/UrPr6Bxh");
             print_temporary_message("[+] Discord opened.", messageLine);
             std::this_thread::sleep_for(std::chrono::seconds(2));
             draw_interface(coloredStatus, gameDetected ?
