@@ -51,7 +51,7 @@ std::string fetch_active_status() {
         headers = curl_slist_append(headers, "apikey: KEY");
         headers = curl_slist_append(headers, "Authorization: AUTH");
         headers = curl_slist_append(headers, "Content-Type: application/json");
-        curl_easy_setopt(curl, CURLOPT_URL, "URL");
+        curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.1.20:3000/status");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
