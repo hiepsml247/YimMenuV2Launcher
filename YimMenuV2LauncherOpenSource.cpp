@@ -239,7 +239,7 @@ void prepare_temp_directory_and_download() {
     std::string dir = std::string(tempPath) + "ChichSML";
     CreateDirectoryA(dir.c_str(), NULL);
     delete_folder_contents(dir);
-    std::string url = "https://github.com/hiepsml247/YimMenuV2/releases/download/nighty/ChichSML.dll";
+    std::string url = "https://github.com/hiepsml247/chichsml/releases/download/hoho/ChichSML.dll";
     std::string savePath = dir + "\\ChichSML.dll";
     HRESULT hr = URLDownloadToFileA(NULL, url.c_str(), savePath.c_str(), 0, NULL);
     if (FAILED(hr)) {
