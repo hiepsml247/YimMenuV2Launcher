@@ -65,21 +65,19 @@ std::string fetch_active_status() {
     }
     return readBuffer;
 }
-std::pair<std::string, std::string> parse_status(const std::string& json) {
-    std::string nameKey = "\"name\":\"";
-    size_t startName = json.find(nameKey);
-    if (startName == std::string::npos) {
+std::pair<std::string, std::string> parse_status(const std::string& jsonStr) {
+    try {
+        auto j = json::parse(jsonStr);
+        std::string name = j.value("name", "Unknown");
+        std::string color;
+        if (name == "Working" || name == u8"Hoạt động") color = "32";
+        else if (name == "Under Maintenance" || name == u8"Bảo trì") color = "33";
+        else if (name == "Not Working" || name == u8"Không hoạt động") color = "31";
+        else color = "94";
+        return { name, color };
+    } catch (...) {
         return { "Unknown", "31" };
     }
-    startName += nameKey.length();
-    size_t endName = json.find("\"", startName);
-    std::string name = json.substr(startName, endName - startName);
-    std::string color;
-    if (name == "Working" || name == u8"Hoạt động") color = "32";
-    else if (name == "Under Maintenance" || name == u8"Bảo trì") color = "33";
-    else if (name == "Not Working" || name == u8"Không hoạt động") color = "31";
-    else color = "94";
-    return { name, color };
 }
 void clear_console_screen() {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
