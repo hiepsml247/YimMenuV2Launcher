@@ -75,9 +75,9 @@ std::pair<std::string, std::string> parse_status(const std::string& json) {
     size_t endName = json.find("\"", startName);
     std::string name = json.substr(startName, endName - startName);
     std::string color;
-    if (name == "Hoạt động") color = "32";
-    else if (name == "Bảo trì") color = "33";
-    else if (name == "Không hoạt động") color = "31";
+    if (name == "Working" || name == u8"Hoạt động") color = "32";
+    else if (name == "Under Maintenance" || name == u8"Bảo trì") color = "33";
+    else if (name == "Not Working" || name == u8"Không hoạt động") color = "31";
     else color = "94";
     return { name, color };
 }
@@ -357,7 +357,7 @@ int main() {
         return 1;
     }
 
-    if (statusPair.first != "Hoạt động") {
+    if (statusPair.first != "Working" && statusPair.first != u8"Hoạt động") {
         std::cerr << u8"\033[31m[!] Tool đang bảo trì hoặc bị chặn bởi server! Vui lòng thử lại sau.\033[0m\n";
         std::cerr << u8"\033[33mTrạng thái server: " << statusPair.first << "\033[0m\n";
         std::this_thread::sleep_for(std::chrono::seconds(5));
