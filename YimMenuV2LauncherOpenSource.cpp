@@ -347,6 +347,22 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 int main() {
     SetConsoleOutputCP(65001);
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
+    // Kiểm tra trạng thái server bắt buộc
+    std::string json_response = fetch_active_status();
+    auto statusPair = parse_status(json_response);
+
+    if (statusPair.first == "Unknown") {
+        std::cerr << u8"\033[31m[!] Không thể kết nối đến server! Tool sẽ thoát.\033[0m\n";
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        return 1;
+    }
+
+    if (statusPair.first != "Working") {
+        std::cerr << u8"\033[31m[!] Tool đang bảo trì hoặc bị chặn bởi server! Vui lòng thử lại sau.\033[0m\n";
+        std::cerr << u8"\033[33mTrạng thái server: " << statusPair.first << "\033[0m\n";
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        return 1;
+    }
 #ifdef _WIN64
     std::cout << u8"\033[32m[+] Chạy tiến trình 64-bit\033[0m\n";
 #else
