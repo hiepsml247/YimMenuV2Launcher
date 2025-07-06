@@ -75,9 +75,9 @@ std::pair<std::string, std::string> parse_status(const std::string& json) {
     size_t endName = json.find("\"", startName);
     std::string name = json.substr(startName, endName - startName);
     std::string color;
-    if (name == "Working") color = "32";
-    else if (name == "Under Maintenance") color = "33";
-    else if (name == "Not Working") color = "31";
+    if (name == "Hoạt động") color = "32";
+    else if (name == "Bảo trì") color = "33";
+    else if (name == "Không hoạt động") color = "31";
     else color = "94";
     return { name, color };
 }
@@ -357,7 +357,7 @@ int main() {
         return 1;
     }
 
-    if (statusPair.first != "Working") {
+    if (statusPair.first != "Hoạt động") {
         std::cerr << u8"\033[31m[!] Tool đang bảo trì hoặc bị chặn bởi server! Vui lòng thử lại sau.\033[0m\n";
         std::cerr << u8"\033[33mTrạng thái server: " << statusPair.first << "\033[0m\n";
         std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -475,7 +475,7 @@ int main() {
         //     break;
         // }
         case 3:
-            system("start https://discord.gg/UrPr6Bxh");
+            system("start https://discord.com/users/537520518744637461");
             print_temporary_message("[+] Discord opened.", messageLine);
             std::this_thread::sleep_for(std::chrono::seconds(2));
             draw_interface(coloredStatus, gameDetected ?
