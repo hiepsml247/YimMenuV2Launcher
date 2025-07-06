@@ -347,9 +347,6 @@ BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 int main() {
     SetConsoleOutputCP(65001);
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
-    // Kiểm tra trạng thái server bắt buộc
-    std::string json_response = fetch_active_status();
-    auto statusPair = parse_status(json_response);
 
     if (statusPair.first == "Unknown") {
         std::cerr << u8"\033[31m[!] Không thể kết nối đến server! Tool sẽ thoát.\033[0m\n";
