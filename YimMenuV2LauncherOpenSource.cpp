@@ -109,7 +109,9 @@ void draw_interface(const std::string& coloredStatus, const std::string& colored
     clear_console_screen();
     std::cout << asciiArt << "\n";
     std::cout << u8"[+] Trạng thái: " << coloredStatus << " | " << coloredStage << "\n\n";
-    std::cout << u8"[1] Tiêm DLL\n" << u8"[3] Mở Discord\n" << u8"[99] Thoát ứng dụng\n\n";
+    std::cout << u8"[1] Tiêm DLL\n";
+    std::cout << u8"[2] Mở thư mục scripts\n"; // <-- thêm dòng này
+    std::cout << u8"[3] Mở Discord\n" << u8"[99] Thoát ứng dụng\n\n";
     std::cout << u8"Chọn chức năng: ";
     std::cout.flush();
 }
@@ -429,7 +431,7 @@ int main() {
                         print_temporary_message(u8"[-] Không tìm thấy tiến trình!", messageLine);
                         break;
                     }
-                    std::cout << u8"[DEBUG] Đang tiêm DLL: " << fullDllPath << "\n";
+                    //std::cout << u8"[DEBUG] Đang tiêm DLL: " << fullDllPath << "\n";
                     if (inject_dll(pid, fullDllPath)) {
                         injected = true;
                         print_temporary_message(u8"[+] Đã tiêm DLL thành công!", messageLine);
@@ -472,6 +474,23 @@ int main() {
         //         u8"\033[33mĐang chờ vào game...\033[0m");
         //     break;
         // }
+        case 2: {
+            // Lấy đường dẫn %AppData%
+            char appDataPath[MAX_PATH];
+            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appDataPath))) {
+                std::string scriptFolder = std::string(appDataPath) + "\\ChichSML\\scripts";
+                ShellExecuteA(NULL, "open", scriptFolder.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                print_temporary_message(u8"[+] Đã mở thư mục scripts!", messageLine);
+            }
+            else {
+                print_temporary_message(u8"[-] Không xác định được đường dẫn AppData!", messageLine);
+            }
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            draw_interface(coloredStatus, gameDetected ?
+                (injected ? u8"\033[32mĐã tiêm!\033[0m" : u8"\033[32mĐã phát hiện trò chơi, Sẵn sàng để tiêm\033[0m") :
+                u8"\033[33mĐang chờ vào game...\033[0m");
+            break;
+        }
         case 3:
             system("start https://discord.com/users/537520518744637461");
             print_temporary_message("[+] Discord opened.", messageLine);
